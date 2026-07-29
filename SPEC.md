@@ -14,6 +14,11 @@ All items below confirmed against the paper's empirical-design section (pp. 42�
   which runs 1871–2025. Ratios are PRE-COMPUTED simple (non-log) columns — no construction needed.
 - The 15 predictors used (file column → clean name): d/p→dp, d/y→dy, e/p→ep, d/e→de, b/m→bm,
   svar, ntis, tbl, lty, ltr, tms, dfy, dfr, infl, + lagged market return (ret.shift(1)) = the 15th.
+- NO log transform on predictors. Confirmed against paper p.42: the only transformation is
+  volatility-standardization (Stage A); "none of our findings are sensitive to variations in how
+  standardizations are implemented."
+- infl: use as-is (GWZ date convention, do not add extra lag); not load-bearing per paper.
+- Usable sample after dropna: 1926-12 → 2025-12, 1189 rows (predictors + contemporaneous excess_ret).
 ## Valuation ratios
 *Is the market cheap or expensive relative to fundamentals? High values generally imply higher
 expected future returns (you're buying in at a low price).*
@@ -54,11 +59,7 @@ expected future returns (you're buying in at a low price).*
 | `mktret_lag` | `ret.shift(1)` | **Lagged market return** — last month's market return; captures short-term momentum/reversal. This is the 15th predictor, built by shifting `ret` forward one row. |
 
 ---
-- NO log transform on predictors. Confirmed against paper p.42: the only transformation is
-  volatility-standardization (Stage A); "none of our findings are sensitive to variations in how
-  standardizations are implemented."
-- infl: use as-is (GWZ date convention, do not add extra lag); not load-bearing per paper.
-- Usable sample after dropna: 1926-12 → 2025-12, 1189 rows (predictors + contemporaneous excess_ret).
+
 
 ### TARGET
 - Monthly log excess return: excess_ret = log(1+ret) − log(1+Rfree).
@@ -66,11 +67,14 @@ expected future returns (you're buying in at a low price).*
   Close proxy (Goyal's standard series), documented as a minor deviation.
 
 ### STANDARDIZATION (two stages — both backward-looking, no look-ahead)
+Not full z-score: **divide by std, do NOT subtract the mean.**
 - **Stage 1 — raw predictors & returns, before RFF:**
   - Predictors: **expanding-window** historical standard deviation (high persistence).
   - Returns: **trailing 12-month** standard deviation (faster-moving vol), using the *uncentered*
     second moment (not demeaned — mean monthly returns too noisy in short windows).
-  - Warm-up: require 36 months for initial predictor standardization → usable sample starts 1930.
+  - All `.shift(1)`-ed for causality (month t uses only data through t−1).
+  - Warm-up: predictor standardization needs history to stabilize; the first ~36 standardized
+    months are NaN and drop → **effective analysis sample starts ~1930** (matches KMZ).
 - **Stage 2 — the RFFs themselves:** after generating features, volatility-standardize the
   training-sample RFFs and the out-of-sample RFF by their std in the *training window*, before regression.
 
@@ -81,6 +85,8 @@ expected future returns (you're buying in at a low price).*
 - G_t = the 15×1 standardized predictor vector at month t.
 
 ### REGRESSION & COMPLEXITY GRID
+- Ridge estimator (paper p.18): β̂(z) = ( z·I + (1/T)·Σ SₜSₜ' )⁻¹ · (1/T)·Σ SₜRₜ₊₁.
+  Penalty is **z·I**; Gram and cross-moment both divided by T.
 - Ridge / ridgeless regression, **NO INTERCEPT**. 🎯 (Paper excludes it; a constant gets shrunk to
   irrelevance. This is the exact choice **Buncic (2025)** attacks — Phase-3 counter-spec: restore intercept.)
 - Complexity: P from 2 to 12,000; ridge shrinkage log₁₀(z) from −3 to 3; complexity c = P/T.
