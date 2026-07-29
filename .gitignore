@@ -216,3 +216,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Data — never commit (too large + can't redistribute CRSP)
+*.csv
+*.parquet
+*.xlsx
+*.xls
+*.zip
+data/
+
+# Colab / Drive artifacts
+/content/
+*.pkl
+*.joblib
