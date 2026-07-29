@@ -10,22 +10,20 @@ Two replication specs live here: **GKX (Phase 1)** and **KMZ (Phase 2)**.
 All items below confirmed against the paper's empirical-design section (pp. 42–44).
 
 ### DATA
-- Source: 15 Goyal–Welch (2008) predictors, monthly, 1926–2020, from Amit Goyal's file (2024 update).
-- The exact 15 (paper's mnemonics): **dfy, infl, svar, de, lty, tms, tbl, dfr, dp, dy, ltr, ep, b/m, ntis** (14 predictors) **+ one lag of the market return** (the 15th).
-  - Note: `de` (dividend-payout, log D12 − log E12) IS included. Do not confuse with a separate d/e.
-- Construction from raw ingredients (log form where applicable):
-  - dp = log(D12) − log(Index) (dividend-price ratio)
-  - dy = log(D12) − log(lagged Index) (dividend yield)
-  - ep = log(E12) − log(Index) (earnings-price ratio)
-  - de = log(D12) − log(E12) (dividend-payout ratio)
-  - tms = lty − tbl (term spread = long-term yield - T-bill rate)
-  - dfy = BAA − AAA (default yield spread)
-  - dfr = corpr − ltr (default return spread = corporate bond return - government bond return)
-  - svar, b/m, ntis, tbl, lty, ltr = direct columns (stock variance, book-to-market, net equity issuance)
-  - infl = direct column, **GWZ date convention** — the price data underlying the inflation stat 
-    is treated as time-t information; do NOT add your own extra lag. (Paper: results essentially
-    unchanged if infl is excluded entirely — so it's not load-bearing if it fights you.) (inflation)
-  - lagged market return = CRSP value-weighted; confirm excess vs. total in the paper's data note.
+- Source: Goyal–Welch predictors, monthly, from Amit Goyal's file (Data2025.xlsx, "Monthly" tab),
+  which runs 1871–2025. Ratios are PRE-COMPUTED simple (non-log) columns — no construction needed.
+- The 15 predictors used (file column → clean name): d/p→dp, d/y→dy, e/p→ep, d/e→de, b/m→bm,
+  svar, ntis, tbl, lty, ltr, tms, dfy, dfr, infl, + lagged market return (ret.shift(1)) = the 15th.
+- NO log transform on predictors. Confirmed against paper p.42: the only transformation is
+  volatility-standardization (Stage A); "none of our findings are sensitive to variations in how
+  standardizations are implemented."
+- infl: use as-is (GWZ date convention, do not add extra lag); not load-bearing per paper.
+- Usable sample after dropna: 1926-12 → 2025-12, 1189 rows (predictors + contemporaneous excess_ret).
+
+### TARGET
+- Monthly log excess return: excess_ret = log(1+ret) − log(1+Rfree).
+- ⚠ DEVIATION: file's `ret` = CRSP-calc S&P500 total return; KMZ specify CRSP value-weighted index.
+  Close proxy (Goyal's standard series), documented as a minor deviation.
 
 ### STANDARDIZATION (two stages — both backward-looking, no look-ahead)
 - **Stage 1 — raw predictors & returns, before RFF:**
