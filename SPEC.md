@@ -14,6 +14,26 @@ All items below confirmed against the paper's empirical-design section (pp. 42�
   which runs 1871–2025. Ratios are PRE-COMPUTED simple (non-log) columns — no construction needed.
 - The 15 predictors used (file column → clean name): d/p→dp, d/y→dy, e/p→ep, d/e→de, b/m→bm,
   svar, ntis, tbl, lty, ltr, tms, dfy, dfr, infl, + lagged market return (ret.shift(1)) = the 15th.
+- Description of Predictors for ease of understanding:
+  Valuation Ratios:
+  dp — dividend-price ratio: annual dividends ÷ price. How much dividend you get per dollar of price.
+  dy — dividend yield: dividends ÷ last month's price (nearly identical to dp, just lagged-price denominator).
+  ep — earnings-price ratio: earnings ÷ price (the inverse of the P/E ratio).
+  de — dividend-payout ratio: dividends ÷ earnings. What fraction of earnings is paid out as dividends (a corporate-behavior signal, not a cheapness signal).
+  bm — book-to-market: aggregate book value ÷ market value. The classic value signal.
+  Interest Rate/Bond Signals:
+  tbl — T-bill rate: the short-term risk-free rate (3-month Treasury).
+  lty — long-term government bond yield.
+  ltr — long-term government bond return (realized, not the yield).
+  tms — term spread: lty − tbl, the slope of the yield curve. An inverted curve (negative tms) is a famous recession predictor.
+  Credit-risk Signals:
+  dfy — default yield spread: BAA − AAA corporate yields. Wider = more fear of default.
+  dfr — default return spread: corporate bond return − government bond return.
+  Other:
+  svar — stock variance: realized variance of recent market returns (a volatility measure).
+  ntis — net equity issuance: how much stock firms are net-issuing vs. buying back. Heavy issuance has historically predicted lower returns (firms issue when their stock is expensive).
+  infl — inflation.
+  mktret_lag — last month's market return (captures short-term momentum/reversal). This is your 15th, built as ret.shift(1).
 - NO log transform on predictors. Confirmed against paper p.42: the only transformation is
   volatility-standardization (Stage A); "none of our findings are sensitive to variations in how
   standardizations are implemented."
