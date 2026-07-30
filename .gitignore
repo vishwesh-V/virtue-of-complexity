@@ -229,3 +229,7 @@ data/
 /content/
 *.pkl
 *.joblib
+
+# in .gitignore, after any image-blocking rules:
+!kmz/voc_family.png
+!kmz/voc_curves.png
